@@ -5,6 +5,7 @@ export interface Product {
   description: string;
   price: number;
   imageUrl: string;
+  dataAiHint: string; // Added for AI image generation hints
   category: string;
   stock: number;
   rating?: number; // Optional
