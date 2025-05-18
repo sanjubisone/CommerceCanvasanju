@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter }_ from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,9 +39,17 @@ const CheckoutClient = () => {
 
   const cartTotal = getCartTotal();
 
-  if (cartItems.length === 0 && typeof window !== 'undefined') { // Check window to avoid SSR issues with router
-    router.push('/products');
-    return null;
+  useEffect(() => {
+    // Redirect if cart is empty, only on client-side
+    if (typeof window !== 'undefined' && cartItems.length === 0) {
+      router.push('/products');
+    }
+  }, [cartItems, router]);
+
+
+  if (cartItems.length === 0) {
+    // Render nothing or a loading state while redirecting
+    return null; 
   }
 
   const onSubmit: SubmitHandler<CheckoutFormValues> = async (data) => {
