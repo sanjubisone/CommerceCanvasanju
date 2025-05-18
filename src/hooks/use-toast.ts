@@ -143,7 +143,7 @@ type Toast = Omit<ToasterToast, "id">
 
 function toast({ ...props }: Toast) {
   const id = genId();
-  let isDismissing = false; // Flag to prevent re-entrant dismiss calls for this specific toast instance
+  let isDismissing = false; // Flag local to this toast instance's closure
 
   const update = (props: ToasterToast) =>
     dispatch({
@@ -151,11 +151,21 @@ function toast({ ...props }: Toast) {
       toast: { ...props, id },
     });
   
-  // `dismissThisToast` is specific to this toast instance and uses the `isDismissing` flag.
   const dismissThisToast = () => {
-    if (isDismissing) return; // Prevent re-entry if already dismissing.
-    isDismissing = true;
-    dispatch({ type: "DISMISS_TOAST", toastId: id });
+    if (isDismissing) { // Prevent re-entry for this specific dismiss operation
+      return;
+    }
+
+    // Check global state: is this toast currently considered open?
+    const toastInGlobalState = memoryState.toasts.find(t => t.id === id);
+    if (toastInGlobalState && toastInGlobalState.open) {
+      isDismissing = true; // Mark that this instance is processing a dismiss
+      dispatch({ type: "DISMISS_TOAST", toastId: id });
+    } else {
+      // If already closed or not found in global state, ensure isDismissing is true
+      // to prevent onOpenChange (if it fires late) from trying again.
+      isDismissing = true;
+    }
   };
 
   dispatch({
@@ -165,15 +175,13 @@ function toast({ ...props }: Toast) {
       id,
       open: true,
       onOpenChange: (newOpenStateFromPrimitive) => {
-        if (!newOpenStateFromPrimitive) {
-          // Radix component is indicating it wants to close.
-          // Check our central state to see if this toast is still considered open.
-          const currentToastInState = memoryState.toasts.find(t => t.id === id);
-          if (currentToastInState && currentToastInState.open) {
-            // If it's open in our state and not already being dismissed by this instance's logic, dismiss it.
-             if (!isDismissing) { 
-                dismissThisToast();
-             }
+        if (!newOpenStateFromPrimitive) { // Radix component indicates it wants to close
+          // Check global state: is this toast currently considered open?
+          const toastInGlobalState = memoryState.toasts.find(t => t.id === id);
+          if (toastInGlobalState && toastInGlobalState.open) {
+            // If global state says it's open, attempt to dismiss.
+            // dismissThisToast will handle the isDismissing flag and re-check global state.
+            dismissThisToast();
           }
         }
       },
@@ -182,7 +190,7 @@ function toast({ ...props }: Toast) {
 
   return {
     id: id,
-    dismiss: dismissThisToast, // Expose the version that uses the flag
+    dismiss: dismissThisToast,
     update,
   };
 }
@@ -204,9 +212,12 @@ function useToast() {
   return {
     ...state,
     toast,
-    // The generic dismiss function from the hook dispatches directly.
-    // It's used if someone calls `dismiss()` from outside the toast's own `onOpenChange`.
-    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    dismiss: (toastId?: string) => {
+      // For generic dismiss call from outside, find the specific toast instance's dismiss if possible,
+      // otherwise, dispatch directly. For simplicity here, we dispatch.
+      // A more complex system might retrieve the specific 'dismissThisToast' if needed.
+      dispatch({ type: "DISMISS_TOAST", toastId });
+    }
   };
 }
 
