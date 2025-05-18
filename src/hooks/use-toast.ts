@@ -151,6 +151,8 @@ function toast({ ...props }: Toast) {
       type: "UPDATE_TOAST",
       toast: { ...props, id },
     })
+  
+  // Define dismiss here to capture the correct `id` in its closure
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
 
   dispatch({
@@ -159,8 +161,16 @@ function toast({ ...props }: Toast) {
       ...props,
       id,
       open: true,
-      onOpenChange: (open) => {
-        if (!open) dismiss()
+      onOpenChange: (newOpenStateFromPrimitive) => { // Renamed 'open' to 'newOpenStateFromPrimitive' for clarity
+        if (!newOpenStateFromPrimitive) {
+          // Only proceed to dismiss if our central state for this toast still believes it's open.
+          // This prevents a loop if the Radix component calls onOpenChange
+          // merely because its 'open' prop was updated by us.
+          const currentToastInState = memoryState.toasts.find(t => t.id === id);
+          if (currentToastInState && currentToastInState.open) {
+            dismiss(); // Call the dismiss function defined above
+          }
+        }
       },
     },
   })
@@ -183,7 +193,7 @@ function useToast() {
         listeners.splice(index, 1)
       }
     }
-  }, []) // Changed dependency from [state] to []
+  }, []) 
 
   return {
     ...state,
