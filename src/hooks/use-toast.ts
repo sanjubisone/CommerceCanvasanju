@@ -94,8 +94,6 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
       if (toastId) {
         addToRemoveQueue(toastId)
       } else {
@@ -144,16 +142,21 @@ function dispatch(action: Action) {
 type Toast = Omit<ToasterToast, "id">
 
 function toast({ ...props }: Toast) {
-  const id = genId()
+  const id = genId();
+  let isDismissing = false; // Flag to prevent re-entrant dismiss calls for this specific toast instance
 
   const update = (props: ToasterToast) =>
     dispatch({
       type: "UPDATE_TOAST",
       toast: { ...props, id },
-    })
+    });
   
-  // Define dismiss here to capture the correct `id` in its closure
-  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
+  // `dismissThisToast` is specific to this toast instance and uses the `isDismissing` flag.
+  const dismissThisToast = () => {
+    if (isDismissing) return; // Prevent re-entry if already dismissing.
+    isDismissing = true;
+    dispatch({ type: "DISMISS_TOAST", toastId: id });
+  };
 
   dispatch({
     type: "ADD_TOAST",
@@ -161,45 +164,50 @@ function toast({ ...props }: Toast) {
       ...props,
       id,
       open: true,
-      onOpenChange: (newOpenStateFromPrimitive) => { // Renamed 'open' to 'newOpenStateFromPrimitive' for clarity
+      onOpenChange: (newOpenStateFromPrimitive) => {
         if (!newOpenStateFromPrimitive) {
-          // Only proceed to dismiss if our central state for this toast still believes it's open.
-          // This prevents a loop if the Radix component calls onOpenChange
-          // merely because its 'open' prop was updated by us.
+          // Radix component is indicating it wants to close.
+          // Check our central state to see if this toast is still considered open.
           const currentToastInState = memoryState.toasts.find(t => t.id === id);
           if (currentToastInState && currentToastInState.open) {
-            dismiss(); // Call the dismiss function defined above
+            // If it's open in our state and not already being dismissed by this instance's logic, dismiss it.
+             if (!isDismissing) { 
+                dismissThisToast();
+             }
           }
         }
       },
     },
-  })
+  });
 
   return {
     id: id,
-    dismiss,
+    dismiss: dismissThisToast, // Expose the version that uses the flag
     update,
-  }
+  };
 }
 
 function useToast() {
-  const [state, setState] = React.useState<State>(memoryState)
+  const [state, setState] = React.useState<State>(memoryState);
 
   React.useEffect(() => {
-    listeners.push(setState)
+    const currentSetState = setState;
+    listeners.push(currentSetState);
     return () => {
-      const index = listeners.indexOf(setState)
+      const index = listeners.indexOf(currentSetState);
       if (index > -1) {
-        listeners.splice(index, 1)
+        listeners.splice(index, 1);
       }
-    }
-  }, []) 
+    };
+  }, []); 
 
   return {
     ...state,
     toast,
+    // The generic dismiss function from the hook dispatches directly.
+    // It's used if someone calls `dismiss()` from outside the toast's own `onOpenChange`.
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
-  }
+  };
 }
 
 export { useToast, toast }
