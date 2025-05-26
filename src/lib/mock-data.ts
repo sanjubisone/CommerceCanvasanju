@@ -11,7 +11,7 @@ export const PRODUCTS: Product[] = [
     category: 'Electronics',
     stock: 15,
     rating: 4.8,
-    reviews: 120,
+  
   },
   {
     id: '2',

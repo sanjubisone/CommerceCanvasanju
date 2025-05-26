@@ -1,10 +1,10 @@
+;
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import ProductGrid from '@/components/products/ProductGrid';
 import { PRODUCTS } from '@/lib/mock-data';
 import type { Product } from '@/types';
-import { ArrowRight } from 'lucide-react';
-
+import { ArrowRight } from 'lucide-react'
 export default function HomePage() {
   const featuredProducts = PRODUCTS.slice(0, 4); // Show first 4 products as featured
 

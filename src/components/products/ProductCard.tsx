@@ -50,7 +50,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
         {product.rating && (
           <div className="text-xs text-muted-foreground mt-1">
             Rating: {product.rating}/5 ({product.reviews} reviews)
+            <div  className='text-xs text-muted-foreground mt-1 font-semibold bg-red-500 w-48 text-white px-2 py-1 rounded-full' >recently bought by sanju bisone</div>
           </div>
+          
         )}
       </CardContent>
       <CardFooter className="p-4 pt-0 flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
