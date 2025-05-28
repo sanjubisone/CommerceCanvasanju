@@ -5,11 +5,15 @@ import { Toaster } from '@/components/ui/toaster';
 import { CartProvider } from '@/contexts/CartContext';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import DeviceInfo from '@/components/ui/deviceinfo';
+
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
 });
+
+
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
@@ -21,6 +25,11 @@ export const metadata: Metadata = {
   description: 'Your modern e-commerce platform.',
 };
 
+
+
+
+
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,6 +40,8 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
         <CartProvider>
           <Header />
+          <DeviceInfo />
+       
           <main className="flex-grow container mx-auto px-4 py-8">
             {children}
           </main>

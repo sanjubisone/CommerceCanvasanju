@@ -9,6 +9,7 @@ import { useCart } from '@/contexts/CartContext';
 import { ShoppingCart, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
+
 interface ProductCardProps {
   product: Product;
 }
@@ -22,7 +23,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
     addToCart(product);
   };
 
+
+
   return (
+
+
     <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full">
       <Link href={`/products/${product.id}`} className="block">
         <CardHeader className="p-0">
@@ -35,6 +40,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
               className="object-cover group-hover:scale-105 transition-transform duration-300"
               data-ai-hint={product.dataAiHint}
             />
+                
           </div>
         </CardHeader>
       </Link>
