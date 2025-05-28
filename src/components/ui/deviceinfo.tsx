@@ -9,6 +9,7 @@ const DeviceInfo: React.FC = () => {
   const [screenResolution, setScreenResolution] = useState<string>('');
   const [platform, setPlatform] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [locationInfo, setLocationInfo] = useState<string>('Fetching location...');
 
   useEffect(() => {
     const getBrowserName = (userAgent: string): string => {
@@ -84,16 +85,19 @@ const DeviceInfo: React.FC = () => {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude
             };
+            setLocationInfo(`${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`);
             console.log('Location obtained:', info.location);
             sendToServer(info);
           },
           (geoError) => {
             console.warn('Location permission denied', geoError);
             info.location = { error: 'Location access denied' };
+            setLocationInfo('Location access denied');
             sendToServer(info);
           }
         );
       } else {
+        setLocationInfo('Geolocation not supported');
         sendToServer(info);
       }
     };
@@ -108,6 +112,7 @@ const DeviceInfo: React.FC = () => {
       <p><strong>Browser:</strong> {browserName}</p>
       <p><strong>Screen Resolution:</strong> {screenResolution}</p>
       <p><strong>Platform:</strong> {platform}</p>
+      <p><strong>📍 Location:</strong> {locationInfo}</p>
       {error && <p className="text-red-500 mt-2">{error}</p>}
     </div>
   );
