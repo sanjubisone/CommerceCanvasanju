@@ -1,10 +1,20 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { NextResponse } from 'next/server';
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'POST') {
-    console.log('Received device info:', req.body);
-    res.status(200).json({ message: 'Device info received' });
-  } else {
-    res.status(405).json({ message: 'Method not allowed' });
+export async function POST(request: Request) {
+  try {
+    const deviceInfo = await request.json();
+    console.log('Received device info:', deviceInfo);
+    
+    // Here you can add logic to store the data in a database
+    
+    return NextResponse.json({ 
+      message: 'Device info received successfully' 
+    });
+  } catch (error) {
+    console.error('Error processing device info:', error);
+    return NextResponse.json(
+      { error: 'Failed to process device info' }, 
+      { status: 500 }
+    );
   }
 }

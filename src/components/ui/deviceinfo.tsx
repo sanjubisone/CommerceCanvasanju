@@ -63,10 +63,16 @@ const DeviceInfo: React.FC = () => {
             body: JSON.stringify(data),
           });
 
-          if (!response.ok) throw new Error('Failed to send device info');
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to send device info');
+          }
+
+          const result = await response.json();
+          console.log('Server response:', result);
         } catch (err) {
           console.error('Error sending device info:', err);
-          setError('Device info भेजने में समस्या आई है');
+          setError('Failed to send device information to server');
         }
       };
 
@@ -77,10 +83,11 @@ const DeviceInfo: React.FC = () => {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude
             };
+            console.log('Location obtained:', info.location);
             sendToServer(info);
           },
           (geoError) => {
-            console.warn('Location permission denied');
+            console.warn('Location permission denied', geoError);
             sendToServer(info);
           }
         );
