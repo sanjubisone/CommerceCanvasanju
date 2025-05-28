@@ -1,3 +1,8 @@
+export interface LocationInfo {
+  latitude: number;
+  longitude: number;
+}
+
 export interface DeviceInfo {
   deviceType: string;
   userAgent: string;
@@ -5,8 +10,5 @@ export interface DeviceInfo {
   platform: string;
   browser: string;
   timestamp: string;
-  location?: {
-    latitude: number;
-    longitude: number;
-  };
+  location?: LocationInfo | { error: string };
 }

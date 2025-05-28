@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import type { DeviceInfo, LocationInfo } from '@/types/device';
 
 const DeviceInfo: React.FC = () => {
   const [deviceInfo, setDeviceInfo] = useState<string>('Loading...');
@@ -28,7 +29,7 @@ const DeviceInfo: React.FC = () => {
       setScreenResolution(resolution);
       setPlatform(platform);
 
-      const info: any = {
+      const info: DeviceInfo = {
         deviceType: 'Unknown Device',
         userAgent,
         screenResolution: resolution,
@@ -88,6 +89,7 @@ const DeviceInfo: React.FC = () => {
           },
           (geoError) => {
             console.warn('Location permission denied', geoError);
+            info.location = { error: 'Location access denied' };
             sendToServer(info);
           }
         );
