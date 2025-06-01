@@ -6,9 +6,12 @@ export const metadata: Metadata = {
   description: 'Your order has been successfully processed',
 };
 
-// Mark the page as dynamic to prevent static prerendering
 export const dynamic = 'force-dynamic';
 
 export default function OrderSuccessPage() {
-  return <OrderSuccessClient />;
+  return (
+    <main className="min-h-screen">
+      <OrderSuccessClient />
+    </main>
+  );
 }
