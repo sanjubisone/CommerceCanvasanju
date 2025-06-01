@@ -1,12 +1,12 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { XCircle } from 'lucide-react';
 
 export default function OrderFailureClient() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const error = searchParams.get('error');
 
@@ -31,18 +31,16 @@ export default function OrderFailureClient() {
           </p>
         </CardContent>
         <CardFooter className="flex justify-center space-x-4">
-          <Button 
-            onClick={() => router.push('/checkout')}
-            variant="default"
-          >
-            Try Again
-          </Button>
-          <Button 
-            onClick={() => router.push('/products')}
-            variant="outline"
-          >
-            Return to Shop
-          </Button>
+          <Link href="/checkout">
+            <Button variant="default">
+              Try Again
+            </Button>
+          </Link>
+          <Link href="/products">
+            <Button variant="outline">
+              Return to Shop
+            </Button>
+          </Link>
         </CardFooter>
       </Card>
     </div>
