@@ -12,13 +12,15 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { CreditCard, User, Mail, MapPin, Landmark } from 'lucide-react';
+import { loadStripe, Stripe } from '@stripe/stripe-js';
 
+// Make sure NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is defined in .env.local
+if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+  throw new Error('Missing NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY');
+}
 
-import { loadStripe } from '@stripe/stripe-js';
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-
-
+// Initialize Stripe outside component
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
 const checkoutSchema = z.object({
   fullName: z.string().min(2, { message: "Full name must be at least 2 characters." }),
@@ -35,8 +37,6 @@ const checkoutSchema = z.object({
 type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
 const CheckoutClient = () => {
-
-
 
   const { clearCart, getCartTotal, cartItems } = useCart();
   const router = useRouter();
@@ -89,9 +89,9 @@ const CheckoutClient = () => {
 
       const { sessionId } = await response.json();
       
-      const { error } = await stripe.redirectToCheckout({ sessionId });
-      if (error) {
-        throw error;
+      const result = await stripe.redirectToCheckout({ sessionId });
+      if (result.error) {
+        throw result.error;
       }
 
     } catch (error) {
